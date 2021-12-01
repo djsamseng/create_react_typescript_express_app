@@ -175,3 +175,42 @@ export default App;
 yarn start
 ```
 
+### Websocket support
+```bash
+cd server
+yarn add express-ws
+yarn add -D @types/express-ws
+```
+
+Edit server/src/app.ts
+```ts
+import enableWs from "express-ws"
+const { app } = enableWs(express());
+
+app.ws("/ws", (ws, request) => {
+  console.log("Got request:", request);
+  ws.on("message", msg => {
+    console.log("Got message:", msg);
+  });
+  ws.send({ test: "test!" });
+});
+```
+
+Edit client/src/App.tsx
+```tsx
+const WS_URL = "ws://localhost:4000/ws";
+
+class App {
+  public componentDidMount() {
+    const ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+      console.log("WS connected");
+      ws.send(JSON.stringify({ subscribe: true }));
+    };
+    ws.onmessage = (evt) => {
+      console.log("Got ws message from server:", evt.data);
+    };
+  }
+}
+```
+
